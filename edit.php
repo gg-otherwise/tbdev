@@ -55,7 +55,8 @@ if (!isset($CURUSER) || ($CURUSER["id"] != $row["owner"] && get_user_class() < U
 		print("<input type=\"hidden\" name=\"returnto\" value=\"" . htmlspecialchars_uni($_GET["returnto"]) . "\" />\n");
 	print("<table border=\"1\" cellspacing=\"0\" cellpadding=\"5\">\n");
 	print("<tr><td class=\"colhead\" colspan=\"2\">Редактировать торрент</td></tr>");
-	tr($tracker_lang['torrent_file'], "<input type=file name=tfile size=80>\n", 1);
+	if ($row['multitracker'] == 'no')
+		tr($tracker_lang['torrent_file'], "<input type=file name=tfile size=80>\n", 1); // disable torrent update for multitracked ones
 	tr($tracker_lang['torrent_name'], "<input type=\"text\" name=\"name\" value=\"" . $row["name"] . "\" size=\"80\" />", 1);
 	tr($tracker_lang['img_poster'], "<input type=radio name=img1action value='keep' checked>Оставить постер&nbsp&nbsp"."<input type=radio name=img1action value='delete'>Удалить постер&nbsp&nbsp"."<input type=radio name=img1action value='update'>Обновить постер<br /><b>Постер:</b>&nbsp&nbsp<input type=file name=image0 size=80>", 1);
 	tr($tracker_lang['images'],
@@ -84,10 +85,6 @@ else
 
 	$s .= "</select>\n";
 	tr("Тип", $s, 1);
-
-    tr('Keywords', '<input type="text" name="keywords" value="' . $row['keywords'] . '" size="80" />', 1);
-    tr('Description', '<input type="text" name="description" value="' . $row['description'] . '" size="80" />', 1);
-
 	tr("Видимый", "<input type=\"checkbox\" name=\"visible\"" . (($row["visible"] == "yes") ? " checked=\"checked\"" : "" ) . " value=\"1\" />
 					Видимый в торрентах<br /><table border=0 cellspacing=0 cellpadding=0 width=420><tr><td class=embedded>Обратите внимание, что торрент автоматически станет видимым когда появиться раздающий и автоматически перестанет быть видимым (станет мертвяком) когда не будет раздающего некоторое время.
 					Используйте этот переключатель для ускорения процеса. Также учтите что невидимые торренты (мертвяки) все-равно могут быть просмотрены и найдены, это просто не по-умолчанию.</td></tr></table>", 1);
@@ -96,7 +93,7 @@ else
     if(get_user_class() >= UC_ADMINISTRATOR)
         tr("Тип раздачи",
 "<input type=\"radio\" name=\"free\" id=\"gold\" value=\"yes\"" . (($row["free"] == "yes") ? " checked" : "") . " /><label for=\"gold\">Золотая раздача (считаеться только раздача, скачка не учитиваеться)</label><br />".
-"<input type=\"radio\" name=\"free\" id=\"silver\" value=\"silver\"" . (($row["free"] == "silver") ? " checked" : "") . " /><label for=\"silver\">Серебрянная раздача (скачка не учитиваеться только на 50%)</label><br />".
+"<input type=\"radio\" name=\"free\" id=\"silver\" value=\"silver\"" . (($row["free"] == "silver") ? " checked" : "") . " /><label for=\"silver\">Серебряная раздача (скачка не учитиваеться только на 50%)</label><br />".
 "<input type=\"radio\" name=\"free\" id=\"no\" value=\"no\"" . (($row["free"] == "no") ? " checked" : "") . " /><label for=\"no\">Обычная раздача (скачка и раздача учитиваеться как обычно)</label><br />"
 , 1);
     if(get_user_class() >= UC_ADMINISTRATOR)

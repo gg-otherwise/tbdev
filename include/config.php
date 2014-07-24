@@ -50,7 +50,7 @@ $SITEEMAIL = 'noreply@' . $_SERVER['HTTP_HOST'];
 $SITENAME = 'TBDev Yuna Scatari Edition';
 
 $autoclean_interval = 900;
-$pic_base_url = './pic/';
+$pic_base_url = './pic';
 
 // [BEGIN] Custom variables from Yuna Scatari
 // TTL
@@ -77,12 +77,17 @@ $use_sessions = 1; // Использовать сессии. 0 - нет, 1 - да.
 $smtptype = 'advanced'; // Тип отправки почты, по умолчанию advanced, лучше не менять
 $allow_block_hide = true; // Разрешить сворачивание блоков
 $check_for_working_mta = true; // Проверять работу почтового MTA при регистрации пользователя (TCP connect @ domain:25)
-$force_private_tracker = true;
+$force_private_tracker = true; // Yet not working
+$max_image_size = 1024*1024; // 1mb
+$allow_guests_details = false; // Разрешить гостям доступ к странице деталей торрента
 
 $admin_email = 'admin@'.$_SERVER['HTTP_HOST']; // Почта администратора трекера, для формы обратной связи
 $website_name = 'TBDev'; // Краткое имя сайта, для формы обратной связи
 
 $enable_adv_antidreg = false; // Использовать продвинутую систему против двойных регистраций. Пояснение внизу:
+
+$_COOKIE_SALT = 'default'; // Соль для cookie пользователей
+
 /*
  * Если наш юзер сделал просто выход (ссылка "Выход" aka logout.php) то у него в куксах останется uid
  * При регистрации будет проверятся наличие этой куки.

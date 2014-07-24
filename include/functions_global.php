@@ -103,13 +103,17 @@ function textbbcode($form, $name, $content = "") {
 	var is_mac = (clientPC.indexOf("mac") != -1);
 
 	function StoreCaret(text) {
-		if (text.createTextRange) {
+		if (document.selection) {
 			text.caretPos = document.selection.createRange().duplicate();
+		} else if (document.getSelection) {
+			text.caretPos = document.getSelection();
 		}
 	}
 	function FieldName(text, which) {
-		if (text.createTextRange) {
+		if (document.selection) {
 			text.caretPos = document.selection.createRange().duplicate();
+		} else if (document.getSelection) {
+			text.caretPos = document.getSelection();
 		}
 		if (which != "") {
 			var Field = eval("document.<?php echo $form;?>." + which);
@@ -138,6 +142,22 @@ function textbbcode($form, $name, $content = "") {
 			SelField.focus();
 		}
 	}
+	function jqwrapText(element, openTag, closeTag) {
+		// This function is not working properly with IE, thus making workaround without JQ
+		if ((clientVer >= 4) && is_ie && is_win) {
+			AddSelectedText(openTag, closeTag);
+		} else {
+		    var textArea = $(element);
+		    var len = textArea.val().length;
+		    var sel = textArea.getSelection();
+		    var start = sel.start;
+		    var end = sel.end;
+		    var selectedText = textArea.val().substring(start, end);
+		    var replacement = openTag + selectedText + closeTag;
+		    textArea.val(textArea.val().substring(0, start) + replacement + textArea.val().substring(end, len));
+		}
+	}
+
 	function InsertCode(code, info, type, error) {
 		if (code == 'name') {
 			AddSelectedText('[b]' + info + '[/b]', '\n');
@@ -145,45 +165,18 @@ function textbbcode($form, $name, $content = "") {
 			if (code == 'url') var url = prompt(info, 'http://');
 			if (code == 'mail') var url = prompt(info, '');
 			if (!url) return alert(error);
-			if ((clientVer >= 4) && is_ie && is_win) {
-				selection = document.selection.createRange().text;
-				if (!selection) {
-					var title = prompt(type, type);
-					AddSelectedText('[' + code + '=' + url + ']' + title + '[/' + code + ']', '\n');
-				} else {
-					AddSelectedText('[' + code + '=' + url + ']', '[/' + code + ']');
-				}
-			} else {
-				mozWrap(TxtFeld, '[' + code + '=' + url + ']', '[/' + code + ']');
-			}
+			jqwrapText(TxtFeld, '[' + code + '=' + url + ']', '[/' + code + ']');
 		} else if (code == 'color' || code == 'family' || code == 'size') {
-			if ((clientVer >= 4) && is_ie && is_win) {
-				AddSelectedText('[' + code + '=' + info + ']', '[/' + code + ']');
-			} else if (TxtFeld.selectionEnd && (TxtFeld.selectionEnd - TxtFeld.selectionStart > 0)) {
-				mozWrap(TxtFeld, '[' + code + '=' + info + ']', '[/' + code + ']');
-			}
+			jqwrapText(TxtFeld, '[' + code + '=' + info + ']', '[/' + code + ']');
 		} else if (code == 'li' || code == 'hr') {
-			if ((clientVer >= 4) && is_ie && is_win) {
-				AddSelectedText('[' + code + ']', '');
-			} else {
-				mozWrap(TxtFeld, '[' + code + ']', '');
-			}
+			jqwrapText(TxtFeld, '[' + code + ']', '');
 		} else {
-			if ((clientVer >= 4) && is_ie && is_win) {
-				var selection = false;
-				selection = document.selection.createRange().text;
-				if (selection && code == 'quote') {
-					AddSelectedText('[' + code + ']' + selection + '[/' + code + ']', '\n');
-				} else {
-					AddSelectedText('[' + code + ']', '[/' + code + ']');
-				}
-			} else {
-				mozWrap(TxtFeld, '[' + code + ']', '[/' + code + ']');
-			}
+			jqwrapText(TxtFeld, '[' + code + ']', '[/' + code + ']');
 		}
 	}
 
 	function mozWrap(txtarea, open, close) {
+		alert('mozWrap function is deprecated!');
 		var selLength = txtarea.textLength;
 		var selStart = txtarea.selectionStart;
 		var selEnd = txtarea.selectionEnd;
@@ -191,7 +184,7 @@ function textbbcode($form, $name, $content = "") {
 			selEnd = selLength;
 
 		var s1 = (txtarea.value).substring(0, selStart);
-		var s2 = (txtarea.value).substring(selStart, selEnd)
+		var s2 = (txtarea.value).substring(selStart, selEnd);
 		var s3 = (txtarea.value).substring(selEnd, selLength);
 		var sT = txtarea.scrollTop, sL = txtarea.scrollLeft;
 		txtarea.value = s1 + open + s2 + close + s3;
@@ -870,7 +863,7 @@ function code_nobb($matches) {
 }
 
 function format_comment($text, $strip_html = true) {
-	global $smilies, $privatesmilies;
+	global $smilies, $privatesmilies, $pic_base_url;
 	$smiliese = $smilies;
 	$s = $text;
 
@@ -950,10 +943,10 @@ function format_comment($text, $strip_html = true) {
 
 	foreach ($smiliese as $code => $url)
 		$s = str_replace($code,
-						 "<img border=\"0\" src=\"pic/smilies/$url\" alt=\"" . htmlspecialchars_uni($code) . "\">", $s);
+						 "<img border=\"0\" src=\"$pic_base_url/smilies/$url\">", $s);
 
 	foreach ($privatesmilies as $code => $url)
-		$s = str_replace($code, "<img border=\"0\" src=\"pic/smilies/$url\">", $s);
+		$s = str_replace($code, "<img border=\"0\" src=\"$pic_base_url/smilies/$url\">", $s);
 
 	while (preg_match("#\[quote\](.*?)\[/quote\]#si", $s)) {
 		$s = encode_quote($s);
@@ -1097,8 +1090,69 @@ function write_log($text, $color = "transparent", $type = "tracker") {
 	sql_query("INSERT INTO sitelog (added, color, txt, type) VALUES($added, $color, $text, $type)");
 }
 
+function getWord($number, $suffix) {
+	$keys = array(2, 0, 1, 1, 1, 2);
+	$mod = $number % 100;
+	$suffix_key = ($mod > 7 && $mod < 20) ? 2: $keys[min($mod % 10, 5)];
+	return $suffix[$suffix_key];
+}
+
 function get_et($ts) {
-	return get_elapsed_time($ts);
+	return get_elapsed_time_plural($ts);
+}
+
+function get_lt($ts) {
+	return get_left_time_plural($ts);
+}
+
+function get_left_time_plural($time_end, $decimals = 0) {
+	$divider['years']   = (60 * 60 * 24 * 365);
+	$divider['months']  = (60 * 60 * 24 * 365 / 12);
+	$divider['weeks']   = (60 * 60 * 24 * 7);
+	$divider['days']    = (60 * 60 * 24);
+	$divider['hours']   = (60 * 60);
+	$divider['minutes'] = (60);
+
+	$langs['years']		= array("год", "года", "лет");
+	$langs['months']	= array("месяц", "месяца", "месяцев");
+	$langs['weeks']		= array("неделю", "недели", "недель");
+	$langs['days']		= array("сутки", "суток", "суток");
+	$langs['hours']		= array("час", "часа", "часов");
+	$langs['minutes']	= array("минуту", "минуты", "минут");
+
+	foreach ($divider as $unit => $div) {
+		${'left_time_'.$unit} = floor((($time_end - TIMENOW) / $div));
+		if (${'left_time_'.$unit} >= 1)
+			break;
+	}
+	$left_time = ${'left_time_'.$unit} . ' ' . getWord(${'left_time_'.$unit}, $langs[$unit]);
+
+	return $left_time;
+}
+
+function get_elapsed_time_plural($time_start, $decimals = 0) {
+	$divider['years']   = (60 * 60 * 24 * 365);
+	$divider['months']  = (60 * 60 * 24 * 365 / 12);
+	$divider['weeks']   = (60 * 60 * 24 * 7);
+	$divider['days']    = (60 * 60 * 24);
+	$divider['hours']   = (60 * 60);
+	$divider['minutes'] = (60);
+
+	$langs['years']		= array("год", "года", "лет");
+	$langs['months']	= array("месяц", "месяца", "месяцев");
+	$langs['weeks']		= array("неделю", "недели", "недель");
+	$langs['days']		= array("день", "дня", "дней");
+	$langs['hours']		= array("час", "часа", "часов");
+	$langs['minutes']	= array("минуту", "минуты", "минут");
+
+	foreach ($divider as $unit => $div) {
+		${'elapsed_time_'.$unit} = floor(((TIMENOW - $time_start) / $div));
+		if (${'elapsed_time_'.$unit} >= 1)
+			break;
+	}
+	$elapsed_time = ${'elapsed_time_'.$unit} . ' ' . getWord(${'elapsed_time_'.$unit}, $langs[$unit]);
+
+	return $elapsed_time;
 }
 
 function get_elapsed_time($ts) {

@@ -48,7 +48,7 @@ sql_query("UPDATE users SET passkey='$CURUSER[passkey]' WHERE id=$CURUSER[id]");
 }
 
 ?>
-<div align=center>
+<div align="center">
 <p><span style="color: green; font-weight: bold;">После загрузки торрента, вам нужно будет скачать торрент и поставить качаться в папку где лежат оригиналы файлов.</span></p>
 <form name="upload" enctype="multipart/form-data" action="takeupload.php" method="post">
 <input type="hidden" name="MAX_FILE_SIZE" value="<?=$max_torrent_size?>" />
@@ -77,13 +77,16 @@ foreach ($cats as $row)
 $s .= "</select>\n";
 tr($tracker_lang['type'], $s, 1);
 
+tr('Мультитрекер', '<input type="checkbox" value="yes" id="multi" name="multi" /><label for="multi">Мультитрекерный торрент</label>
+	<br /><font class="small">Включение этой опции отключает установку private-флага и удаление других аннонсеров из файла</font>', 1);
+
 tr('Keywords', '<input type="text" name="keywords" size="80" />', 1);
 tr('Description', '<input type="text" name="description" size="80" />', 1);
 
 if(get_user_class() >= UC_ADMINISTRATOR)
     tr("Тип раздачи",
     "<input type=\"radio\" name=\"free\" id=\"gold\" value=\"yes\" /><label for=\"gold\">Золотая раздача (считаеться только раздача, скачка не учитиваеться)</label><br />".
-    "<input type=\"radio\" name=\"free\" id=\"silver\" value=\"silver\" /><label for=\"silver\">Серебрянная раздача (скачка не учитиваеться только на 50%)</label><br />".
+    "<input type=\"radio\" name=\"free\" id=\"silver\" value=\"silver\" /><label for=\"silver\">Серебряная раздача (скачка не учитиваеться только на 50%)</label><br />".
     "<input type=\"radio\" name=\"free\" id=\"no\" value=\"no\" checked /><label for=\"no\">Обычная раздача (скачка и раздача учитиваеться как обычно)</label><br />"
     , 1);
 
@@ -94,6 +97,7 @@ if (get_user_class() >= UC_ADMINISTRATOR)
 <tr><td align="center" colspan="2"><input type="submit" class=btn value="<?=$tracker_lang['upload'];?>" /></td></tr>
 </table>
 </form>
+</div>
 <?
 
 stdfoot();

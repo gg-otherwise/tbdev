@@ -158,12 +158,12 @@ $completed .= "</table>";
 if ($user[added] == "0000-00-00 00:00:00")
 	$joindate = 'N/A';
 else
-	$joindate = "$user[added] (" . get_elapsed_time(sql_timestamp_to_unix_timestamp($user["added"])) . " ".$tracker_lang['ago'].")";
+	$joindate = "$user[added] (" . get_et(sql_timestamp_to_unix_timestamp($user["added"])) . " ".$tracker_lang['ago'].")";
 $lastseen = $user["last_access"];
 if ($lastseen == "0000-00-00 00:00:00")
 	$lastseen = $tracker_lang['never'];
 else {
-  $lastseen .= " (" . get_elapsed_time(sql_timestamp_to_unix_timestamp($lastseen)) . " ".$tracker_lang['ago'].")";
+  $lastseen .= " (" . get_et(sql_timestamp_to_unix_timestamp($lastseen)) . " ".$tracker_lang['ago'].")";
 }
   $res = sql_query("SELECT COUNT(*) FROM comments WHERE user = " . $user[id]) or sqlerr(__FILE__, __LINE__);
   $arr3 = mysql_fetch_row($res);
@@ -182,9 +182,9 @@ if (mysql_num_rows($res) == 1)
 //if ($user["donor"] == "yes") $donor = "<td class=embedded><img src=pic/starbig.gif alt='Donor' style='margin-left: 4pt'></td>";
 //if ($user["warned"] == "yes") $warned = "<td class=embedded><img src=pic/warnedbig.gif alt='Warned' style='margin-left: 4pt'></td>";
 
-if ($user["gender"] == "1") $gender = "<img src=\"".$pic_base_url."male.gif\" alt=\"Парень\" title=\"Парень\">";
-elseif ($user["gender"] == "2") $gender = "<img src=\"".$pic_base_url."female.gif\" alt=\"Девушка\" title=\"Девушка\">";
-//elseif ($user["gender"] == "Н/Д") $gender = "<td class=embedded><img src=".$pic_base_url."na.gif alt='Н/Д' style='margin-left: 4pt'></td>";
+if ($user["gender"] == "1") $gender = "<img src=\"".$pic_base_url."/male.gif\" alt=\"Парень\" title=\"Парень\">";
+elseif ($user["gender"] == "2") $gender = "<img src=\"".$pic_base_url."/female.gif\" alt=\"Девушка\" title=\"Девушка\">";
+//elseif ($user["gender"] == "Н/Д") $gender = "<td class=embedded><img src=".$pic_base_url."/na.gif alt='Н/Д' style='margin-left: 4pt'></td>";
 
 $res = sql_query("SELECT torrent, added, uploaded, downloaded, torrents.name AS torrentname, categories.name AS catname, categories.id AS catid, size, image, category, seeders, leechers FROM peers LEFT JOIN torrents ON peers.torrent = torrents.id LEFT JOIN categories ON torrents.category = categories.id WHERE userid = $id AND seeder='no'") or sqlerr(__FILE__, __LINE__);
 if (mysql_num_rows($res) > 0)
@@ -452,30 +452,35 @@ if (get_user_class() >= UC_MODERATOR && $user["class"] < get_user_class())
 	print("<tr><td class=rowhead>Добавить заметку</td><td colspan=2 align=left><textarea cols=60 rows=3 name=modcomm></textarea></td></tr>\n");
 	$warned = $user["warned"] == "yes";
 
- 	print("<tr><td class=\"rowhead\"" . (!$warned ? " rowspan=\"2\"": "") . ">Предупреждение</td>
- 	<td align=\"left\" width=\"20%\">" .
+ 	print("<tr><td class=\"rowhead\" rowspan=\"2\">Предупреждение</td>
+ 	<td align=\"center\" colspan=\"2\">" .
   ( $warned
-  ? "<input name=\"warned\" value=\"yes\" type=\"radio\" checked>Да<input name=\"warned\" value=\"no\" type=\"radio\">Нет"
- 	: "Нет" ) ."</td>");
+  ? "<font color=\"red\">Пользователь предупреждён</font>"
+ 	: "<font color=\"green\">Предупреждения нет</font>" ) ."</td></tr>");
 
 	if ($warned) {
+
+		print("<tr><td>Оставить предупреждённым?<br />");
+		print("<input name=\"warned\" value=\"yes\" type=\"radio\" checked>Да<input name=\"warned\" value=\"no\" type=\"radio\">Нет");
+
 		$warneduntil = $user['warneduntil'];
 		if ($warneduntil == '0000-00-00 00:00:00')
-    		print("<td align=\"center\">На неограниченый срок</td></tr>\n");
+    		print("<td align=\"center\">Предупреждение на неограниченый срок</td></tr>\n");
 		else {
-    		print("<td align=\"center\">До $warneduntil");
-	    	print(" (" . mkprettytime(strtotime($warneduntil) - gmtime()) . " осталось)</td></tr>\n");
+    		print("<td align=\"center\">Предупреждение действует до<br />" . date('d.m.Y H:i:s', strtotime($warneduntil)));
+	    	print(" (осталось " . get_lt(strtotime($warneduntil)) . ")</td></tr>\n");
  	    }
   } else {
-    print("<td>Предупредить на <select name=\"warnlength\">\n");
+    print("<tr><td>Предупредить на:<br />");
+    print("<select name=\"warnlength\">\n");
     print("<option value=\"0\">------</option>\n");
     print("<option value=\"1\">1 неделю</option>\n");
     print("<option value=\"2\">2 недели</option>\n");
     print("<option value=\"4\">4 недели</option>\n");
     print("<option value=\"8\">8 недель</option>\n");
     print("<option value=\"255\">Неограничено</option>\n");
-    print("</select>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Комментарий в ЛС:</td></tr>\n");
-    print("<tr><td colspan=\"2\" align=\"left\"><input type=\"text\" size=\"60\" name=\"warnpm\"></td></tr>");
+    print("</select></td><td>Причина предупреждения:<br />");
+    print("<input type=\"text\" size=\"60\" name=\"warnpm\"></td></tr>");
   }
     /*print("<tr><td class=\"rowhead\" rowspan=\"2\">Включен</td><td colspan=\"2\" align=\"left\"><input name=\"enabled\" value=\"yes\" type=\"radio\"" . ($enabled ? " checked" : "") . ">Да <input name=\"enabled\" value=\"no\" type=\"radio\"" . (!$enabled ? " checked" : "") . ">Нет</td></tr>\n");
     if ($enabled)

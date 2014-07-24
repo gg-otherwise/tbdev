@@ -68,7 +68,6 @@ if ($action == "viewmailbox") {
 
         stdhead($mailbox_name); ?>
         <script language="Javascript" type="text/javascript">
-        <!-- Begin
         var checkflag = "false";
         var marked_row = new Array;
         function check(field) {
@@ -83,7 +82,6 @@ if ($action == "viewmailbox") {
                                 checkflag = "false";
                         }
                 }
-                //  End -->
         </script>
         <!--<script language="javascript" type="text/javascript" src="js/functions.js"></script>-->
         <H1><?=$mailbox_name?></H1>
@@ -444,7 +442,7 @@ EOD;
 if ($action == 'mass_pm') {
         if (get_user_class() < UC_MODERATOR)
                 stderr($tracker_lang['error'], $tracker_lang['access_denied']);
-        $n_pms = 0 + $_POST['n_pms'];
+        $n_pms = intval($_POST['n_pms']);
         $pmees = $_POST['pmees'];
         $auto = $_POST['auto'];
 
@@ -455,7 +453,7 @@ if ($action == 'mass_pm') {
         ?>
         <table class=main border=0 cellspacing=0 cellpadding=0>
         <tr><td class=embedded><div align=center>
-        <form method=post action=<?=$_SERVER['PHP_SELF']?> name=message>
+        <form method=post action=<?=htmlspecialchars_uni($_SERVER['PHP_SELF']);?> name=message>
         <input type=hidden name=action value=takemass_pm>
         <? if ($_SERVER["HTTP_REFERER"]) { ?>
         <input type=hidden name=returnto value="<?=htmlspecialchars_uni($_SERVER["HTTP_REFERER"]);?>">
